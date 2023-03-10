@@ -61,7 +61,6 @@ class PLRTriangularIndentation(nn.Module):
 
 
 # %%
-# %%
 F = PLRTriangularIndentation(
     tip, 6.2e-6, 4, v=1e-5, t_max=0.2, E0=572.0, t0=1.0, gamma=0.42
 )
