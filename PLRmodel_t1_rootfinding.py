@@ -4,6 +4,8 @@ import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import root_scalar
 import matplotlib.pyplot as plt
+from jhelabtoolkit.utils.plotting import configure_matplotlib_defaults
+configure_matplotlib_defaults()
 #%%
 # PLR analytic solution of t1
 def t1_analytic(t, t_max, gamma):
@@ -36,3 +38,4 @@ fig, ax = plt.subplots(1, 1, figsize=(7,5))
 ax.plot(t_array, t1_array, 'o', label="expect", markerfacecolor = "white", alpha = 0.8)
 ax.plot(t_array, t1_analytic_array, label="analytic", linewidth = 2, alpha = 0.8)
 ax.legend()
+# %%

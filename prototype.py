@@ -33,9 +33,14 @@ with torch.no_grad():
     f_data = F_true(t)
 dataset = torch.utils.data.TensorDataset(t.view(1, -1), f_data.view(1, -1))
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=1)
-
-plt.plot(t.numpy(), f_data.clone().detach().numpy(), ".")
-
+fig, ax = plt.subplots(1, 1, figsize=(7, 5))
+ax.plot(t.numpy(), f_data.clone().detach().numpy(), ".")
+ax.set_xlabel("Time (s)")
+ax.set_ylabel("Force (mN)")
+ax.set_title(
+    r"Simulated $F(t)$ for the PLR model with $E_0=0.572$ kPa, $\gamma=0.42$, and $t_0=1$ s",
+    fontsize="medium",
+)
 # %%
 F_model = PLRTriangularIndentation(
     tip, 6.2, 4, v=10, t_max=0.2, E0=0.1, t0=1.0, gamma=0.0
@@ -103,7 +108,7 @@ F_model = PLRTriangularIndentation(
 )
 F_model.t0.requires_grad = False
 regression = SimpleCurveFitter(F_model, 5e-3)
-#%%
+# %%
 with torch.no_grad():
     f_init = F_model(torch.tensor(time))
 
@@ -145,8 +150,8 @@ F_model.E0
 with torch.no_grad():
     f_fitted = F_model(torch.tensor(time)).clone().detach().numpy()
 
-fig, axes = plt.subplots(1, 2, figsize = (10, 5))
-axes[0].plot(time, force, label = "Data")
-axes[0].plot(time, f_fitted, label = "Fitted")
+fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+axes[0].plot(time, force, label="Data")
+axes[0].plot(time, f_fitted, label="Fitted")
 axes[0].legend()
 # %%
