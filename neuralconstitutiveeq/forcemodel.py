@@ -32,11 +32,15 @@ class PLRTriangularIndentation(nn.Module):
         self.t_max = t_max
         self.E0 = to_parameter(E0)
         self.t0 = to_parameter(t0)
-        self.gamma = to_parameter(gamma)
+        self._gamma = to_parameter(gamma)
 
     def t1(self, t):
         t1 = t - (t - self.t_max) * torch.pow(2.0, (1 - self.gamma).reciprocal())
         return torch.relu(t1)
+
+    @property
+    def gamma(self):
+        return torch.clamp(self._gamma, 0, 1)
 
     def _approach(self, t):
         t = t.unsqueeze(-1)
