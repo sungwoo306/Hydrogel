@@ -4,6 +4,8 @@ import numpy as np
 from scipy.integrate import quad
 from scipy.optimize import root_scalar
 import matplotlib.pyplot as plt
+from jhelabtoolkit.utils.plotting import configure_matplotlib_defaults
+configure_matplotlib_defaults()
 #%%
 # PLR analytic solution of t1
 def t1_analytic(t, t_max, gamma):
