@@ -36,3 +36,4 @@ fig, ax = plt.subplots(1, 1, figsize=(7,5))
 ax.plot(t_array, t1_array, 'o', label="expect", markerfacecolor = "white", alpha = 0.8)
 ax.plot(t_array, t1_analytic_array, label="analytic", linewidth = 2, alpha = 0.8)
 ax.legend()
+# %%
