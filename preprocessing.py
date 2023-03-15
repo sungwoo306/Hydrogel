@@ -30,8 +30,6 @@ get_sampling_rate(config)
 forward, backward = data["spec forward"], data["spec backward"]
 
 forward
-
-
 # %%
 def get_z_and_defl(spectroscopy_data: xr.DataArray) -> tuple[ndarray, ndarray]:
     piezo_z = spectroscopy_data["z-axis sensor"].to_numpy()
@@ -43,7 +41,7 @@ def calc_tip_distance(piezo_z_pos: ndarray, deflection: ndarray) -> ndarray:
     return piezo_z_pos - deflection
 
 
-def find_contact_point(distance: ndarray, deflection: ndarray) -> float:
+def find_contact_point1(distance: ndarray, deflection: ndarray) -> float:
     # Right now, only support 1D arrays of tip_distance and tip_deflection
     locator = kneed.KneeLocator(
         distance,
@@ -56,6 +54,14 @@ def find_contact_point(distance: ndarray, deflection: ndarray) -> float:
     )
     return locator.knee
 
+def find_contact_point2(deflection: ndarray, N: int) -> ndarray:
+    # Ratio of Variance
+    rov = np.array([])
+    length = np.arange(np.size(deflection))
+    rov = np.array([np.append(rov, np.array([np.var(deflection[i+1:i+N])/np.var(deflection[i-N:i-1])])) for i in length]).flatten()
+    rov = rov[N:np.size(rov)-N]
+    idx = np.argmax(rov)
+    return rov, idx, rov[N+idx]
 
 def fit_baseline_polynomial(
     distance: ndarray, deflection: ndarray, contact_point: float = 0.0, degree: int = 1
@@ -65,23 +71,35 @@ def fit_baseline_polynomial(
     return Polynomial.fit(
         distance[pre_contact], deflection[pre_contact], deg=degree, domain=domain
     )
-
-
 # %%
-z_fwd, defl_fwd = get_z_and_defl(forward)
-z_bwd, defl_bwd = get_z_and_defl(backward)
-dist_fwd = calc_tip_distance(z_fwd, defl_fwd)
-dist_bwd = calc_tip_distance(z_bwd, defl_bwd)
+z_fwd, defl_fwd = get_z_and_defl(forward) 
+z_bwd, defl_bwd = get_z_and_defl(backward) 
+dist_fwd = calc_tip_distance(z_fwd, defl_fwd) 
+dist_bwd = calc_tip_distance(z_bwd, defl_bwd) 
 # cp = find_contact_point(dist_fwd, defl_fwd)
+#%%
+# ROV
+N = 10
+rov_fwd = find_contact_point2(defl_fwd, N)[0]
+idx_fwd = find_contact_point2(defl_fwd, N)[1]
+rov_fwd_max = find_contact_point2(defl_fwd, N)[2]
+
+rov_bwd = find_contact_point2(defl_bwd, N)[0]
+idx_bwd = find_contact_point2(defl_bwd, N)[1]
+rov_bwd_max = find_contact_point2(defl_bwd, N)[2]
+
+print(idx_fwd,idx_bwd)
+#%%
+fig, ax = plt.subplots(1, 1, figsize = (7, 5))
+ax.plot(dist_fwd[N:np.size(dist_fwd)-N], find_contact_point2(defl_fwd, N)[0])
 # %%
 fig, ax = plt.subplots(1, 1, figsize=(7, 5))
 ax.plot(dist_fwd, defl_fwd, label="forward")
 ax.plot(dist_bwd, defl_bwd, label="backward")
 ax.legend()
 # %%
-cp = 1.2e-6
-dist_fwd = dist_fwd - cp
-dist_bwd = dist_bwd - cp
+dist_fwd = dist_fwd - cp_fwd
+dist_bwd = dist_bwd - cp_bwd
 baseline_poly_fwd = fit_baseline_polynomial(dist_fwd, defl_fwd)
 defl_processed_fwd = defl_fwd - baseline_poly_fwd(dist_fwd)
 baseline_poly_bwd = fit_baseline_polynomial(dist_bwd, defl_bwd)
