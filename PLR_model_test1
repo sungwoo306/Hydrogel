@@ -1,0 +1,70 @@
+#%%
+from functools import partial
+import numpy as np
+import torch
+from torchquad import Trapezoid, Simpson, Boole, MonteCarlo, VEGAS
+import matplotlib.pyplot as plt
+from jhelabtoolkit.utils.plotting import configure_matplotlib_defaults
+configure_matplotlib_defaults()
+#%%
+# PLR analytic solution of t1
+def t1_analytic(t, t_max, gamma):
+    return torch.clip(t - 2**(1/(1-gamma))*(t-t_max), 0, None)
+# %%
+def Integrand(t_prime, t, v, t0, E0, gamma) -> float:
+    return v * E0 * (((t-t_prime)/t0)**(-gamma))
+
+#%%
+def PLR_Integration(func, t1, t, v, t_max, t0, E0, gamma) -> float:
+    res = Trapezoid()
+    return res.integrate(func, dim =1, N=1000, integration_domain = [[t1, t_max]]) - res.integrate(func, dim =1, N=1000, integration_domain = [[t_max, t]]) 
+    
+#%%
+# t = torch.linspace(0.21, 0.4, 100)
+t = 0.21
+integrand = partial(Integrand, t=t, t0 = 1, v = 10, E0 = 572, gamma = 0.42)
+integration = VEGAS()
+e = 1e-8
+t1 = 0.17696173488041395
+t_max =0.2
+integration_1 = integration.integrate(integrand, dim =1, N=10000, integration_domain = [[t1, t_max]])
+integration_2 = integration.integrate(integrand, dim =1, N=10000, integration_domain = [[t_max, t-e]])
+integration_final = integration_1-integration_2
+print(integration_1, integration_2, integration_final)
+
+#%%
+t = 0.21
+integrand = partial(Integrand, t=t, t0 = 1, v = 10, E0 = 572, gamma = 0.42)
+e = 1e-8
+t1 = 0.17696173488041395
+t_max =0.2
+integration_1 = torch.trapezoid(integrand, dim = -1, N=10000, integration_domain = [[t1, t_max]])
+integration_2 = integration.integrate(integrand, dim =1, N=10000, integration_domain = [[t_max, t-e]])
+integration_final = integration_1-integration_2
+print(integration_1, integration_2, integration_final)
+
+
+
+
+
+
+
+
+#%%
+print(integration(0.17696173488041395, 0.21))
+print(t1_analytic(0.21, 0.2, 0.42))
+#%%
+t_final = 0.4
+t_array = np.linspace(0.21, t_final, 100)
+t1_array = np.array([root_scalar(integration, x0=0.0, x1=0.2, args=(t), method='secant').root for t in t_array])
+t1_array = np.clip(t1_array, 0, None)
+
+t1_analytic_array = t1_analytic(t_array, 0.2, 0.42)
+
+# t1_array = np.array([root_scalar(integration(t), 0, method='newton')] for t in t_array)
+# print(len(t1_array))
+fig, ax = plt.subplots(1, 1, figsize=(10,7))
+ax.plot(t_array, t1_array, 'o', label="expect", markerfacecolor = "white", alpha = 0.8)
+ax.plot(t_array, t1_analytic_array, label="analytic", linewidth = 2, alpha = 0.8)
+ax.legend()
+# %%

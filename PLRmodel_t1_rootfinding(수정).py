@@ -48,7 +48,7 @@ t = torch.Tensor([0.2])
 y = torch.zeros([1])
 t1 = torch.Tensor([0.5])
 a = quad(Integrand(t=t, t0 = t0, v = v, E0 = E0, gamma = gamma), t1, t_max) - quad(Integrand(t = t, t0 = t0, v = v, E0 = E0, gamma = gamma), t_max, t)
-# t1 = torch.Tensor(rootfinder(quad((Integrand(t=t, t0 = t0, v = v, E0 = E0, gamma = gamma), t1, t_max) - quad(Integrand(t = t, t0 = t0, v = v, E0 = E0, gamma = gamma), t_max, t)), y0 = y, params=(t, v, t0, E0, gamma)))
+t1 = torch.Tensor(rootfinder(quad((Integrand(t=t, t0 = t0, v = v, E0 = E0, gamma = gamma), t1, t_max) - quad(Integrand(t = t, t0 = t0, v = v, E0 = E0, gamma = gamma), t_max, t)), y0 = y, params=(t, v, t0, E0, gamma)))
 
 print(a)
 #%%

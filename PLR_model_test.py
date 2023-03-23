@@ -2,9 +2,7 @@
 from functools import partial
 import numpy as np
 import torch
-from torch import nn
-from xitorch.integrate import quad
-from xitorch.optimize import rootfinder
+from torchquad import Trapezoid, Simpson
 import matplotlib.pyplot as plt
 from jhelabtoolkit.utils.plotting import configure_matplotlib_defaults
 configure_matplotlib_defaults()
@@ -28,7 +26,9 @@ class Integrand(nn.Module):
     
 #%%
 def PLR_Integration(t1, t, v, t_max, t0, E0, gamma) -> torch.Tensor:
-    res = quad(Integrand, t1, t_max, params=(t1, t, v, t0, E0, gamma)) - quad(Integrand, t_max, t, params=(t1, t, v, t0, E0, gamma))    
+    a = Trapezoid()
+    a.integrate(Integrand)
+    rquad(Integrand, t1, t_max, params=(t1, t, v, t0, E0, gamma)) - quad(Integrand, t_max, t, params=(t1, t, v, t0, E0, gamma))    
     return res
 #%%
 class PLRmodel(torch.nn.Module):
@@ -68,4 +68,3 @@ print(quad(integrand, lb, lu, (a,b)))
 
 root = rootfinder(integrand, y0=y, params=(a,b))
 print(root)
-#%%
